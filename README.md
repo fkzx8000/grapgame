@@ -100,5 +100,5 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Feel free to adjust the text as needed. This README provides an overview of the project, explains the theoretical background, lists the file structure for the **GraphGame** folder, and includes installation and usage instructions suitable for GitHub.
-```
+
 ````
