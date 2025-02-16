@@ -1,4 +1,9 @@
-// Node.tsx
+// GraphGame/Node.tsx
+//
+// קומפוננטה המציגה קודקוד (עיגול עם תווית).
+// אם זה מקור - צבוע בתכלת, אם זה יעד - צבוע בורוד בהיר (lightcoral), אחרת לבן.
+// יש כאן אירועים onClick ו-onMouseDown לצורך סימולציה/גרירה.
+
 import React from "react";
 import { NodeType } from "./GraphCanvasTypes";
 import "./GraphGame.css";
@@ -7,8 +12,8 @@ interface NodeProps {
   node: NodeType;
   nodeRadius: number;
   fontSizeNodeLabel: number;
-  onClick: () => void;
-  onMouseDown: (e: React.MouseEvent) => void;
+  onClick: () => void; // לחיצה על הקודקוד
+  onMouseDown: (e: React.MouseEvent) => void; // התחלת גרירה (אופציונלי)
 }
 
 const Node: React.FC<NodeProps> = ({
@@ -18,15 +23,12 @@ const Node: React.FC<NodeProps> = ({
   onClick,
   onMouseDown,
 }) => {
-  // צביעת קודקוד:
-  // מקור (s) = "lightblue"
-  // יעד (t) = "lightcoral"
-  // אחר = "white"
+  // צביעת הקודקוד לפי התווית שלו
   let fillColor = "white";
   if (node.label === "s") {
-    fillColor = "lightblue";
+    fillColor = "lightblue"; // מקור
   } else if (node.label === "t") {
-    fillColor = "lightcoral"; // אדום בהיר
+    fillColor = "lightcoral"; // יעד
   }
 
   return (

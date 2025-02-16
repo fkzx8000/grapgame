@@ -22,3 +22,14 @@ SolutionSteps.jsx:
 
 GraphGame.css:
 מכיל את כל העיצוב עבור הקומפוננטות – סידור הכל, צבעים, רקעים, גבולות, גדלים וכו׳.
+
+GraphGame/
+├── GraphGame.tsx
+├── Toolbar.tsx
+├── StatusBar.tsx
+├── GraphCanvas.tsx
+├── Node.tsx
+├── Edge.tsx
+├── GraphCanvasTypes.ts
+├── SolutionSteps.tsx
+└── GraphGame.css

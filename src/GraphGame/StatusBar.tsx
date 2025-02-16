@@ -1,4 +1,8 @@
-// StatusBar.tsx
+// GraphGame/StatusBar.tsx
+//
+// קומפוננטה להצגת מצב הזרימה (Flow) ופוטנציאל הזרימה הנוסף,
+// וכן הודעות (message) למשתמש. כשתרצה לעבור לעברית מלא:
+
 import React from "react";
 import "./GraphGame.css";
 
@@ -17,7 +21,7 @@ const StatusBar: React.FC<StatusBarProps> = ({
     <div className="flow-status-bar">
       <div className="flow-status">
         <strong>זרימה נוכחית:</strong> {currentFlow} &nbsp;|&nbsp;
-        <strong>פוטנציאל נוסף:</strong> {additionalFlow}
+        <strong>פוטנציאל זרימה נוספת:</strong> {additionalFlow}
       </div>
       <div className="message-box">{message}</div>
     </div>

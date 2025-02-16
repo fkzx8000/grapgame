@@ -1,14 +1,17 @@
-// SolutionSteps.tsx
+// GraphGame/SolutionSteps.tsx
+//
+// מציגה את שלבי הפתרון (נתיבים והקיבולות) בסדר כרונולוגי כאשר מריצים פתרון אוטומטי.
+
 import React from "react";
 import "./GraphGame.css";
 
-interface SolutionStep {
+interface StepData {
   path: number[];
   bottleneck: number;
 }
 
 interface SolutionStepsProps {
-  steps: SolutionStep[];
+  steps: StepData[];
   getNodeLabel: (nodeId: number) => string;
 }
 
@@ -18,13 +21,12 @@ const SolutionSteps: React.FC<SolutionStepsProps> = ({
 }) => {
   return (
     <div className="solution-steps">
-      <h3>שלבי הפתרון (נתיבים והקיבולות):</h3>
+      <h3>שלבי הפתרון (נתיבי הרחבה וצוואר בקבוק)</h3>
       <ul>
         {steps.map((step, index) => (
           <li key={index}>
-            <strong>#{index + 1}</strong>:{" "}
-            {step.path.map(getNodeLabel).join(" -> ")} (קיבולת:{" "}
-            {step.bottleneck})
+            נתיב {index + 1}: {step.path.map(getNodeLabel).join(" -> ")} (צוואר
+            בקבוק: {step.bottleneck})
           </li>
         ))}
       </ul>

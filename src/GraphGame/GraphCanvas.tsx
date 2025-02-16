@@ -1,4 +1,11 @@
-// GraphCanvas.tsx
+// GraphGame/GraphCanvas.tsx
+//
+// קומפוננטה המרכזת את ה-SVG לציור הגרף:
+// - מציגה את כל הצלעות (Edge)
+// - מציגה את כל הקודקודים (Node)
+// - אם המשתמש בונה "userPath" ידני, מציגים פוליליין כחול.
+// - מקבל רפרנס ל-SVG (svgRef) לטיפול בגרירה.
+
 import React from "react";
 import Node from "./Node";
 import Edge from "./Edge";
@@ -54,15 +61,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         onMouseUp={handleMouseUp}
       >
         <defs>
-          {/*
-            נשתמש ב-refX קצת יותר גדול מהרדיוס (18)
-            כדי שהחץ ייעצר בקצה העיגול במקום לחדור לתוכו.
-          */}
+          {/* הגדרת חץ לסיום הצלע */}
           <marker
             id="arrow"
             markerWidth="10"
             markerHeight="10"
-            refX="22" // ערך גדול מ-18
+            refX="22"
             refY="5"
             orient="auto"
           >
@@ -70,18 +74,19 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
           </marker>
         </defs>
 
+        {/* מציגים את כל הצלעות */}
         {edges.map((edge) => (
           <Edge
             key={edge.id}
             edge={edge}
             nodes={nodes}
-            // edges={edges}  // ← אם תרצה לבדוק מול שאר הצלעות
             fontSizeEdgeLabel={fontSizeEdgeLabel}
             offsetEdgeLabel={offsetEdgeLabel}
             highlighted={highlightedEdges.includes(edge.id)}
           />
         ))}
 
+        {/* מציגים את כל הקודקודים */}
         {nodes.map((node) => (
           <Node
             key={node.id}
@@ -93,11 +98,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
           />
         ))}
 
+        {/* אם המשתמש בחר userPath (נתיב ידני), נצייר קו כחול ביניהם */}
         {userPath.length > 0 && (
           <polyline
             points={userPath
               .map((nid) => {
-                const n = nodes.find((node) => node.id === nid);
+                const n = nodes.find((x) => x.id === nid);
                 return n ? `${n.x},${n.y}` : "";
               })
               .join(" ")}

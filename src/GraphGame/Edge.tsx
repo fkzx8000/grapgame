@@ -1,4 +1,9 @@
-// Edge.tsx
+// GraphGame/Edge.tsx
+//
+// קומפוננטה המציגה צלע. אם זו צלע בין שני קודקודים שונים, מציגה קשת מעוגלת
+// (אחת כלפי מעלה או מטה - לפי סדר ה-id) עם חץ בסופה, ועליה טקסט של flow/capacity.
+// אם זו צלע מלולאת עצמית (from === to) מציגים קו ישר (או אפשר לצייר לולאה).
+
 import React from "react";
 import { NodeType, EdgeType } from "./GraphCanvasTypes";
 import "./GraphGame.css";
@@ -8,7 +13,7 @@ interface EdgeProps {
   nodes: NodeType[];
   fontSizeEdgeLabel: number;
   offsetEdgeLabel: number;
-  highlighted: boolean;
+  highlighted: boolean; // האם הצלע מודגשת (למשל בפתרון אוטומטי)
 }
 
 const Edge: React.FC<EdgeProps> = ({
@@ -22,37 +27,25 @@ const Edge: React.FC<EdgeProps> = ({
   const toNode = nodes.find((n) => n.id === edge.to);
   if (!fromNode || !toNode) return null;
 
-  // עובי הקו אם הצלע מודגשת
   const strokeWidth = highlighted ? 5 : 2;
 
-  // נבדוק האם from < to או להיפך, כדי להחליט על כיוון העיקום
-  // מטרתנו: אם from < to ⇒ קשת "למעלה", אחרת ⇒ קשת "למטה".
-  // כך אם יש שתי צלעות מנוגדות (A→B ו-B→A), אחת תעוגל למעלה והשנייה למטה.
+  // אם הצלע איננה לולאה
   if (edge.from !== edge.to) {
-    // חשב וקטור בין הקודקודים
+    // מחשבים קשת לפי וקטור מאונך
     const dx = toNode.x - fromNode.x;
     const dy = toNode.y - fromNode.y;
     const length = Math.sqrt(dx * dx + dy * dy);
-    const offset = 20; // מידת העיקום
-
-    // וקטור מאונך (נורמלי)
+    const offset = 20;
     const nx = -dy / length;
     const ny = dx / length;
-
-    // אם from < to ⇒ sign = +1 (קשת "למעלה"),
-    // אחרת ⇒ sign = -1 (קשת "למטה").
+    // אם from < to => קשת כלפי מעלה, אחרת כלפי מטה
     const sign = edge.from < edge.to ? +1 : -1;
-
-    // נקודת בקרה לקשת (Quadratic Bézier)
     const cx = (fromNode.x + toNode.x) / 2 + sign * nx * offset;
     const cy = (fromNode.y + toNode.y) / 2 + sign * ny * offset;
-
-    // מחרוזת הנתיב: Move→Quad→(Goal)
     const pathD = `M ${fromNode.x},${fromNode.y} Q ${cx},${cy} ${toNode.x},${toNode.y}`;
 
     return (
-      <g key={edge.id}>
-        {/* קו מעוגל עם חץ בסופו */}
+      <g>
         <path
           d={pathD}
           fill="none"
@@ -61,7 +54,6 @@ const Edge: React.FC<EdgeProps> = ({
           markerEnd="url(#arrow)"
           id={`edge-${edge.id}`}
         />
-        {/* מציג flow/capacity על הנתיב */}
         <text fill="red" fontSize={fontSizeEdgeLabel}>
           <textPath
             href={`#edge-${edge.id}`}
@@ -74,11 +66,9 @@ const Edge: React.FC<EdgeProps> = ({
       </g>
     );
   } else {
-    // אם הצלע היא לולאה (from === to), נוכל להציג באופן אחר, או כרגע קו ישר
-    // (תוכל לשנות זאת בהתאם לצורך).
-    // או אפשר להחזיר null אם אינך רוצה צלע ללולאה עצמית.
+    // אם זו לולאה
     return (
-      <g key={edge.id}>
+      <g>
         <line
           x1={fromNode.x}
           y1={fromNode.y}

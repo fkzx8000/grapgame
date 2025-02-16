@@ -1,5 +1,6 @@
-/* GraphGame.css */
+/* GraphGame/GraphGame.css */
 
+/* מעטפת כללית של המשחק */
 .graph-game-container {
   display: flex;
   flex-direction: column;
@@ -10,13 +11,15 @@
   padding: 10px;
 }
 
-h2 {
-  margin-top: 20px;
+.guide-container {
+  width: 600px;
+  border: 1px solid #aaa;
+  background-color: #fdfdfd;
+  padding: 10px;
   margin-bottom: 10px;
-  color: #333;
 }
 
-/* Status Bar */
+/* פס הסטטוס (מציג זרימה והודעה) */
 .flow-status-bar {
   width: 800px;
   background-color: #f1f1f1;
@@ -37,7 +40,7 @@ h2 {
   color: #555;
 }
 
-/* Toolbar */
+/* סרגל (Toolbar) */
 .toolbar {
   width: 800px;
   display: flex;
@@ -66,7 +69,7 @@ h2 {
   background-color: #025aa5;
 }
 
-/* Graph Canvas */
+/* מעטפת של הציור (SVG) */
 .graph-wrapper {
   width: 800px;
   height: 500px;
@@ -81,7 +84,7 @@ h2 {
   height: 100%;
 }
 
-/* Solution Steps */
+/* רשימת שלבי הפתרון */
 .solution-steps {
   width: 800px;
   border: 1px solid #ccc;
@@ -103,7 +106,7 @@ h2 {
   margin: 4px 0;
 }
 
-/* Hover effect for nodes */
+/* הובר על קודקודים */
 .graph-canvas g circle:hover {
   stroke: #0275d8;
   stroke-width: 2px;

@@ -1,4 +1,8 @@
-// Toolbar.tsx
+// GraphGame/Toolbar.tsx
+//
+// קומפוננטת סרגל הכלים. מציגה כפתורים למצב עריכה ומצב סימולציה.
+// מעברית: "הוסף קודקוד", "הוסף צלע", "הגדר מקור", "הגדר יעד", ועוד.
+
 import React from "react";
 import "./GraphGame.css";
 
@@ -14,11 +18,14 @@ interface ToolbarProps {
   addSourceAndTarget: () => void;
   autoSolve: () => void;
   startEditMode: () => void;
+  toggleGuide: () => void;
+  handleSubmitPath: () => void;
+  handleResetPath: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   mode,
-  // editMode,
+  editMode,
   setEditMode,
   startSimulation,
   resetGame,
@@ -26,6 +33,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   addSourceAndTarget,
   autoSolve,
   startEditMode,
+  toggleGuide,
+  handleSubmitPath,
+  handleResetPath,
 }) => {
   return (
     <div className="toolbar">
@@ -38,30 +48,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
           </button>
           <button onClick={() => setEditMode("setTarget")}>הגדר יעד (t)</button>
           <button onClick={cancelEdit}>בטל עריכה</button>
-          <button onClick={addSourceAndTarget}>הוסף s,t</button>
-          <button onClick={startSimulation}>סימולציה</button>
+          <button onClick={addSourceAndTarget}>הוסף s,t אוטומטי</button>
+          <button onClick={startSimulation}>מעבר לסימולציה</button>
           <button onClick={autoSolve}>פתרון אוטומטי</button>
         </>
       )}
       {mode === "simulation" && (
         <>
-          <button
-            onClick={() => {
-              /* ניתן להוסיף כאן פונקציה להגשת נתיב */
-            }}
-          >
-            הגש נתיב
-          </button>
-          <button
-            onClick={() => {
-              /* ניתן להוסיף כאן פונקציה לאיפוס נתיב */
-            }}
-          >
-            אפס נתיב
-          </button>
-          <button onClick={startEditMode}>מצב עריכה</button>
+          <button onClick={handleSubmitPath}>הגש נתיב</button>
+          <button onClick={handleResetPath}>אפס נתיב</button>
+          <button onClick={startEditMode}>חזור לעריכה</button>
         </>
       )}
+      <button onClick={toggleGuide}>מדריך</button>
       <button onClick={resetGame}>אפס משחק</button>
     </div>
   );

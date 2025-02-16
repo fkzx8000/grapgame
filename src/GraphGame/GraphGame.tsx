@@ -1,20 +1,25 @@
-// GraphGame.tsx
+// GraphGame/GraphGame.tsx
+//
+// קומפוננטה מרכזית: מנהלת מצב (סטייט) הגרף, מצבי עריכה וסימולציה,
+// ומממשת את אלגוריתם הזרימה (כולל BFS בגרף השארי).
+// אם additionalFlow=0 => "כל הכבוד, הזרימה מקסימלית!"
+
 import React, { useState, useRef } from "react";
 import Toolbar from "./Toolbar";
 import StatusBar from "./StatusBar";
-import { NodeType, EdgeType } from "./GraphCanvasTypes";
-
 import GraphCanvas from "./GraphCanvas";
 import SolutionSteps from "./SolutionSteps";
+import { NodeType, EdgeType } from "./GraphCanvasTypes";
 import "./GraphGame.css";
 
 const GraphGame: React.FC = () => {
-  // ----- מצב הגרף -----
+  // ==== מצב הגרף ====
   const [nodes, setNodes] = useState<NodeType[]>([]);
   const [edges, setEdges] = useState<EdgeType[]>([]);
 
-  // ----- מצבי משחק -----
+  // ==== מצבי משחק: "edit" או "simulation" ====
   const [mode, setMode] = useState<"edit" | "simulation">("edit");
+  // תת-מצבי עריכה: null, addNode, addEdge, setSource, setTarget
   const [editMode, setEditMode] = useState<
     "addNode" | "addEdge" | "setSource" | "setTarget" | null
   >(null);
@@ -22,257 +27,281 @@ const GraphGame: React.FC = () => {
     null
   );
 
-  // ----- הגדרות מקור ויעד -----
+  // ==== הגדרת מקור ויעד (s,t) ====
   const [sourceNode, setSourceNode] = useState<number | null>(null);
   const [targetNode, setTargetNode] = useState<number | null>(null);
 
-  // ----- מצב סימולציה -----
+  // ==== מצב סימולציה ====
   const [userPath, setUserPath] = useState<number[]>([]);
   const [message, setMessage] = useState<string>("");
 
-  // ----- מונים -----
+  // ==== מונים ====
   const [nodeCounter, setNodeCounter] = useState<number>(0);
   const [edgeCounter, setEdgeCounter] = useState<number>(0);
-  const [manualLabelCounter, setManualLabelCounter] = useState<number>(0);
 
-  // ----- מצב פתרון אוטומטי -----
+  // ==== פתרון אוטומטי ====
   const [autoSolving, setAutoSolving] = useState<boolean>(false);
   const [highlightedEdges, setHighlightedEdges] = useState<number[]>([]);
   const [solutionSteps, setSolutionSteps] = useState<
     { path: number[]; bottleneck: number }[]
   >([]);
 
-  // ----- מצב גרירה -----
+  // ==== גרירת קודקודים ====
   const [draggingNode, setDraggingNode] = useState<number | null>(null);
 
-  // ----- קבועי SVG -----
+  // ==== קבועים ל-SVG ====
   const svgWidth = 800;
   const svgHeight = 500;
   const nodeRadius = 18;
-  // const edgeWidthHighlighted = 5;
-  // const edgeWidthNormal = 2;
   const fontSizeEdgeLabel = 16;
   const fontSizeNodeLabel = 16;
   const offsetEdgeLabel = -10;
 
-  const svgRef = useRef<SVGSVGElement>(null!);
+  // מדריך
+  const [showGuide, setShowGuide] = useState<boolean>(false);
 
-  // ----- פונקציות עזר -----
-  const getManualLabel = (n: number): string => {
-    const alphabet = "abcdefghijklmnopqruvwxyz";
-    return n < alphabet.length
-      ? alphabet[n]
-      : alphabet[n % alphabet.length] + Math.floor(n / alphabet.length);
-  };
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  const getNodeLabel = (nodeId: number): string => {
-    const node = nodes.find((n) => n.id === nodeId);
-    return node ? node.label : "";
-  };
+  // ---- פונקציות חישוב BFS בגרף השארי ----
 
+  // מקבלת קיבולת שארית בין שני קודקודים u -> v
   const getResidualCapacity = (u: number, v: number): number => {
-    const edge = edges.find((e) => e.from === u && e.to === v);
-    if (edge) {
-      const cap = edge.capacity - edge.flow;
+    // בדיקת צלע קדימה (capacity - flow)
+    const fwd = edges.find((ed) => ed.from === u && ed.to === v);
+    if (fwd) {
+      const cap = fwd.capacity - fwd.flow;
       if (cap > 0) return cap;
     }
-    const rev = edges.find((e) => e.from === v && e.to === u);
+    // בדיקת צלע הפוכה (reverse = flow)
+    const rev = edges.find((ed) => ed.from === v && ed.to === u);
     if (rev) {
-      const cap = rev.flow;
-      if (cap > 0) return cap;
+      const revCap = rev.flow;
+      if (revCap > 0) return revCap;
     }
     return 0;
   };
 
+  // BFS לחיפוש מסלול מרחיב מהמקור ליעד
   const computeAugmentingPath = (): {
     path: number[];
     bottleneck: number;
   } | null => {
     if (sourceNode === null || targetNode === null) return null;
-    const queue: number[] = [sourceNode];
-    const visited: { [key: number]: number | null } = { [sourceNode]: null };
+    const queue = [sourceNode];
+    const visited: Record<number, number | null> = { [sourceNode]: null };
 
     while (queue.length > 0) {
-      const current = queue.shift()!;
-      if (current === targetNode) break;
-      nodes.forEach((node) => {
-        if (
-          !visited.hasOwnProperty(node.id) &&
-          getResidualCapacity(current, node.id) > 0
-        ) {
-          visited[node.id] = current;
-          queue.push(node.id);
+      const curr = queue.shift()!;
+      if (curr === targetNode) break;
+      // עוברים על כל הקודקודים ובודקים אם לא ביקרנו ואם יש קיבולת שארית > 0
+      nodes.forEach((nd) => {
+        if (!visited.hasOwnProperty(nd.id)) {
+          const rc = getResidualCapacity(curr, nd.id);
+          if (rc > 0) {
+            visited[nd.id] = curr;
+            queue.push(nd.id);
+          }
         }
       });
     }
-    if (!visited.hasOwnProperty(targetNode)) return null;
-
+    if (!visited.hasOwnProperty(targetNode)) {
+      return null;
+    }
+    // משחזרים את הנתיב ומוצאים צוואר בקבוק
     const path: number[] = [];
     let bottleneck = Infinity;
     let at: number | null = targetNode;
     while (at !== null) {
       path.unshift(at);
-      const par: number | null = visited[at];
+      const par = visited[at];
       if (par !== null) {
-        const cap = getResidualCapacity(par, at);
-        if (cap < bottleneck) bottleneck = cap;
+        const rc = getResidualCapacity(par, at);
+        if (rc < bottleneck) bottleneck = rc;
       }
       at = par;
     }
     return { path, bottleneck };
   };
 
+  // עדכון הזרימה בנתיב (לאורך path) בגודל augmentation
   const applyAugmentation = (path: number[], augmentation: number) => {
     const newEdges = edges.map((e) => ({ ...e }));
     for (let i = 0; i < path.length - 1; i++) {
       const u = path[i];
       const v = path[i + 1];
-      const idx = newEdges.findIndex((e) => e.from === u && e.to === v);
-      if (idx !== -1) {
-        newEdges[idx].flow += augmentation;
+      const forwardIndex = newEdges.findIndex(
+        (ed) => ed.from === u && ed.to === v
+      );
+      if (forwardIndex !== -1) {
+        newEdges[forwardIndex].flow += augmentation;
       } else {
-        const rIdx = newEdges.findIndex((e) => e.from === v && e.to === u);
-        if (rIdx !== -1) {
-          newEdges[rIdx].flow -= augmentation;
+        // reverse
+        const revIndex = newEdges.findIndex(
+          (ed) => ed.from === v && ed.to === u
+        );
+        if (revIndex !== -1) {
+          newEdges[revIndex].flow -= augmentation;
         }
       }
     }
     setEdges(newEdges);
   };
 
+  // חישוב סך כל הזרימה היוצאת מהמקור
   const computeMaxFlow = (): number => {
     if (sourceNode === null) return 0;
-    let sum = 0;
-    edges.forEach((e) => {
-      if (e.from === sourceNode) sum += e.flow;
+    let total = 0;
+    edges.forEach((ed) => {
+      if (ed.from === sourceNode) total += ed.flow;
     });
-    return sum;
+    return total;
   };
 
-  // שיטה פשוטה לחישוב זרימה נוספת (ניתן לשפר כך שלא יחליף את הגרף)
+  // חישוב פוטנציאל זרימה נוסף (אם additional=0 => אין מסלולים!)
   const computeMaxAdditionalFlow = (): number => {
-    if (sourceNode === null || targetNode === null) return 0;
-    let addFlow = 0;
-    let result = computeAugmentingPath();
-    while (result) {
-      addFlow += result.bottleneck;
-      applyAugmentation(result.path, result.bottleneck);
-      result = computeAugmentingPath();
+    // יוצרים העתק מקומי של edges
+    const localEdges = edges.map((e) => ({ ...e }));
+    let total = 0;
+    const localGetRC = (u: number, v: number) => {
+      const fwd = localEdges.find((ed) => ed.from === u && ed.to === v);
+      if (fwd) return fwd.capacity - fwd.flow;
+      const rev = localEdges.find((ed) => ed.from === v && ed.to === u);
+      if (rev) return rev.flow;
+      return 0;
+    };
+    const localApplyAug = (p: number[], aug: number) => {
+      for (let i = 0; i < p.length - 1; i++) {
+        const uu = p[i];
+        const vv = p[i + 1];
+        const fi = localEdges.findIndex((ed) => ed.from === uu && ed.to === vv);
+        if (fi !== -1) {
+          localEdges[fi].flow += aug;
+        } else {
+          const ri = localEdges.findIndex(
+            (ed) => ed.from === vv && ed.to === uu
+          );
+          if (ri !== -1) localEdges[ri].flow -= aug;
+        }
+      }
+    };
+    const localBFS = (): { path: number[]; bottleneck: number } | null => {
+      if (sourceNode === null || targetNode === null) return null;
+      const queue = [sourceNode];
+      const visited: Record<number, number | null> = { [sourceNode]: null };
+      while (queue.length > 0) {
+        const c = queue.shift()!;
+        if (c === targetNode) break;
+        nodes.forEach((nd) => {
+          if (!visited.hasOwnProperty(nd.id)) {
+            const rc = localGetRC(c, nd.id);
+            if (rc > 0) {
+              visited[nd.id] = c;
+              queue.push(nd.id);
+            }
+          }
+        });
+      }
+      if (!visited.hasOwnProperty(targetNode)) return null;
+      const p: number[] = [];
+      let bneck = Infinity;
+      let at = targetNode;
+      while (at !== null) {
+        p.unshift(at);
+        const par = visited[at];
+        if (par !== null) {
+          const rc = localGetRC(par, at);
+          if (rc < bneck) bneck = rc;
+        }
+        at = par;
+      }
+      return { path: p, bottleneck: bneck };
+    };
+    while (true) {
+      if (sourceNode === null || targetNode === null) break;
+      const res = localBFS();
+      if (!res) break;
+      total += res.bottleneck;
+      localApplyAug(res.path, res.bottleneck);
     }
-    return addFlow;
+    return total;
   };
 
-  // ----- Event Handlers -----
+  // ----------------------------------------------
+  // פונקציות למצב עריכה
+  // ----------------------------------------------
+
   const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (mode !== "edit" || editMode !== "addNode") return;
+    if (mode !== "edit" || !editMode) return;
+    if (editMode !== "addNode") return;
     if (!svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const newNode = {
+    const newNode: NodeType = {
       id: nodeCounter,
-      label: getManualLabel(manualLabelCounter),
+      label: `n${nodeCounter}`,
       x,
       y,
     };
-    setNodes([...nodes, newNode]);
     setNodeCounter(nodeCounter + 1);
-    setManualLabelCounter(manualLabelCounter + 1);
+    setNodes([...nodes, newNode]);
     setMessage(
-      `נוסף קודקוד "${newNode.label}" ב(${Math.round(x)},${Math.round(y)}).`
+      `נוסף קודקוד id=${newNode.id} במיקום (${Math.round(x)}, ${Math.round(
+        y
+      )}).`
     );
     setEditMode(null);
   };
 
-  const handleAddEdgeClick = (targetNodeId: number) => {
-    if (selectedEdgeSource === null) {
-      setSelectedEdgeSource(targetNodeId);
-      setMessage("בחר קודקוד יעד לצלע (לא יכול להיות זהה למקור).");
-      return;
-    }
-    if (selectedEdgeSource === targetNodeId) {
-      setMessage("לא ניתן ליצור צלע מאותו קודקוד לעצמו.");
-      setSelectedEdgeSource(null);
-      setEditMode(null);
-      return;
-    }
-    if (
-      edges.find((e) => e.from === selectedEdgeSource && e.to === targetNodeId)
-    ) {
-      setMessage("כבר קיימת צלע בכיוון זה בין הקודקודים.");
-      setSelectedEdgeSource(null);
-      setEditMode(null);
-      return;
-    }
-    const capStr = prompt(
-      `קיבולת לצלע מ${getNodeLabel(selectedEdgeSource)} ל${getNodeLabel(
-        targetNodeId
-      )}:`
-    );
-    if (capStr !== null && !isNaN(Number(capStr)) && Number(capStr) > 0) {
-      const newEdge = {
-        id: edgeCounter,
-        from: selectedEdgeSource,
-        to: targetNodeId,
-        capacity: Number(capStr),
-        flow: 0,
-      };
-      setEdges([...edges, newEdge]);
-      setEdgeCounter(edgeCounter + 1);
-      setSelectedEdgeSource(null);
-      setMessage("צלע נוספה בהצלחה.");
-      setEditMode(null);
-    } else {
-      setMessage("קיבולת לא תקינה. נסה שוב.");
-    }
-  };
-
-  // כאן אנו מוודאים שלא ניתן להגדיר יותר מקודקוד מקור או יעד
   const handleEditModeNodeClick = (nodeId: number) => {
+    if (!editMode) return;
     if (editMode === "addEdge") {
-      handleAddEdgeClick(nodeId);
+      if (selectedEdgeSource === null) {
+        setSelectedEdgeSource(nodeId);
+        setMessage("בחר קודקוד יעד לצלע (לא יכול להיות זהה למקור).");
+      } else {
+        if (selectedEdgeSource === nodeId) {
+          setMessage("לא ניתן ליצור צלע מאותו קודקוד לעצמו.");
+        } else {
+          const capStr = prompt("הכנס קיבולת לצלע:");
+          if (capStr && parseInt(capStr) > 0) {
+            const newEdge: EdgeType = {
+              id: edgeCounter,
+              from: selectedEdgeSource,
+              to: nodeId,
+              capacity: parseInt(capStr),
+              flow: 0,
+            };
+            setEdges([...edges, newEdge]);
+            setEdgeCounter(edgeCounter + 1);
+            setMessage("צלע נוספה בהצלחה.");
+          }
+        }
+        setSelectedEdgeSource(null);
+        setEditMode(null);
+      }
     } else if (editMode === "setSource") {
       if (sourceNode !== null && sourceNode !== nodeId) {
-        setMessage("מקור כבר מוגדר. לא ניתן להגדיר יותר ממקור אחד.");
-        return;
+        setMessage("כבר הגדרת מקור! ניתן להגדיר רק מקור אחד.");
+      } else {
+        setNodes(
+          nodes.map((n) => (n.id === nodeId ? { ...n, label: "s" } : n))
+        );
+        setSourceNode(nodeId);
+        setMessage("הוגדר מקור (s).");
       }
-      setNodes(nodes.map((n) => (n.id === nodeId ? { ...n, label: "s" } : n)));
-      setSourceNode(nodeId);
       setEditMode(null);
-      setMessage("הוגדר מקור: s");
     } else if (editMode === "setTarget") {
       if (targetNode !== null && targetNode !== nodeId) {
-        setMessage("יעד כבר מוגדר. לא ניתן להגדיר יותר מיעד אחד.");
-        return;
-      }
-      setNodes(nodes.map((n) => (n.id === nodeId ? { ...n, label: "t" } : n)));
-      setTargetNode(nodeId);
-      setEditMode(null);
-      setMessage("הוגדר יעד: t");
-    }
-  };
-
-  const handleSimulationModeNodeClick = (nodeId: number) => {
-    if (userPath.length === 0) {
-      if (nodeId !== sourceNode) {
-        setMessage("יש להתחיל את הנתיב בקודקוד המקור (s).");
-        return;
-      }
-      setUserPath([nodeId]);
-    } else {
-      const lastNode = userPath[userPath.length - 1];
-      const rc = getResidualCapacity(lastNode, nodeId);
-      if (rc <= 0) {
-        setMessage(
-          `אין קשת שארית מ${getNodeLabel(lastNode)} ל${getNodeLabel(nodeId)}.`
+        setMessage("כבר הגדרת יעד! ניתן להגדיר רק יעד אחד.");
+      } else {
+        setNodes(
+          nodes.map((n) => (n.id === nodeId ? { ...n, label: "t" } : n))
         );
-        return;
+        setTargetNode(nodeId);
+        setMessage("הוגדר יעד (t).");
       }
-      if (userPath.includes(nodeId)) {
-        setMessage("קודקוד כבר נמצא בנתיב. בחר אחר.");
-        return;
-      }
-      setUserPath([...userPath, nodeId]);
+      setEditMode(null);
     }
   };
 
@@ -280,7 +309,30 @@ const GraphGame: React.FC = () => {
     if (mode === "edit") {
       handleEditModeNodeClick(nodeId);
     } else if (mode === "simulation") {
-      handleSimulationModeNodeClick(nodeId);
+      // במצב סימולציה - המשתמש בוחר נתיב להרחבה
+      if (userPath.length === 0) {
+        // חייב להתחיל ב-s
+        if (nodeId !== sourceNode) {
+          setMessage("יש להתחיל את הנתיב במקור (s).");
+          return;
+        }
+        setUserPath([nodeId]);
+        setMessage("");
+      } else {
+        // בודקים קיבולת שארית בין הקודקוד האחרון ל-nId
+        const lastNode = userPath[userPath.length - 1];
+        const rc = getResidualCapacity(lastNode, nodeId);
+        if (rc <= 0) {
+          setMessage("אין קיבולת שארית מהקודקוד האחרון לזה שבחרת.");
+          return;
+        }
+        if (userPath.includes(nodeId)) {
+          setMessage("הקודקוד כבר בנתיב. בחר קודקוד אחר.");
+          return;
+        }
+        setUserPath([...userPath, nodeId]);
+        setMessage("");
+      }
     }
   };
 
@@ -290,8 +342,7 @@ const GraphGame: React.FC = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
-    if (draggingNode !== null) {
+    if (draggingNode !== null && svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -303,62 +354,24 @@ const GraphGame: React.FC = () => {
     setDraggingNode(null);
   };
 
-  // const handleSubmitPath = () => {
-  //   if (mode !== "simulation") return;
-  //   if (userPath.length < 2) {
-  //     setMessage("בחר לפחות שני קודקודים: s ו-t.");
-  //     return;
-  //   }
-  //   if (userPath[userPath.length - 1] !== targetNode) {
-  //     setMessage("הנתיב חייב להסתיים ב-t.");
-  //     return;
-  //   }
-  //   const result = computeAugmentingPath();
-  //   if (!result) {
-  //     setMessage(`הזרימה היא מקסימלית! סה"כ זרימה: ${computeMaxFlow()}`);
-  //     return;
-  //   }
-  //   const { path: correctPath, bottleneck } = result;
-  //   if (JSON.stringify(userPath) !== JSON.stringify(correctPath)) {
-  //     setMessage(
-  //       `נתיב שגוי! הנתיב המרחיב הוא: ${correctPath
-  //         .map(getNodeLabel)
-  //         .join(" -> ")}`
-  //     );
-  //     return;
-  //   }
-  //   applyAugmentation(userPath, bottleneck);
-  //   setMessage(`נתיב נכון! צוואר: ${bottleneck}.`);
-  //   setUserPath([]);
-  //   if (!computeAugmentingPath()) {
-  //     setMessage(`הזרימה היא מקסימלית! סה"כ זרימה: ${computeMaxFlow()}`);
-  //   }
-  // };
-
-  // const handleResetPath = () => {
-  //   setUserPath([]);
-  //   setMessage("");
-  // };
+  // -----------
+  // כפתורים ופעולות
+  // -----------
+  const startSimulation = () => {
+    if (sourceNode === null || targetNode === null) {
+      setMessage("קודם הגדר מקור ויעד לפני סימולציה.");
+      return;
+    }
+    setMode("simulation");
+    setUserPath([]);
+    setMessage("מצב סימולציה - בחר נתיב מרחיב או השתמש בפתרון אוטומטי.");
+  };
 
   const startEditMode = () => {
     setMode("edit");
     setEditMode(null);
     setUserPath([]);
-    setMessage("עברנו למצב עריכה.");
-  };
-
-  const startSimulation = () => {
-    if (sourceNode === null || targetNode === null) {
-      setMessage("יש להגדיר s ו-t לפני סימולציה.");
-      return;
-    }
-    if (edges.length === 0) {
-      setMessage("יש ליצור לפחות צלע אחת לפני סימולציה.");
-      return;
-    }
-    setMode("simulation");
-    setUserPath([]);
-    setMessage("מצב סימולציה פעיל. בחר נתיב מרחיב מ-s ל-t.");
+    setMessage("חזרת למצב עריכה.");
   };
 
   const resetGame = () => {
@@ -372,7 +385,6 @@ const GraphGame: React.FC = () => {
     setMessage("");
     setNodeCounter(0);
     setEdgeCounter(0);
-    setManualLabelCounter(0);
     setAutoSolving(false);
     setHighlightedEdges([]);
     setSolutionSteps([]);
@@ -381,105 +393,157 @@ const GraphGame: React.FC = () => {
   const cancelEdit = () => {
     setEditMode(null);
     setSelectedEdgeSource(null);
-    setMessage("ביטול עריכה.");
+    setMessage("עריכה בוטלה.");
   };
 
   const addSourceAndTarget = () => {
-    // בדיקה אם כבר יש s או t
     if (
       nodes.some((n) => n.label === "s") ||
       nodes.some((n) => n.label === "t")
     ) {
-      setMessage("s ו-t כבר קיימים.");
+      setMessage("s או t כבר קיימים.");
       return;
     }
-
-    // מחשבים מראש את ה-id של המקור והיעד
-    const sourceId = nodeCounter;
-    const targetId = nodeCounter + 1;
-
-    // מעדכנים את ה-counter בבת אחת, במקום לקרוא פעמיים
+    const sId = nodeCounter;
+    const tId = nodeCounter + 1;
     setNodeCounter(nodeCounter + 2);
-
-    // יוצרים את אובייקטי הקודקודים
-    const source: NodeType = {
-      id: sourceId,
-      label: "s",
-      x: 50,
-      y: svgHeight / 2,
-    };
-    const target: NodeType = {
-      id: targetId,
+    const sNode: NodeType = { id: sId, label: "s", x: 50, y: svgHeight / 2 };
+    const tNode: NodeType = {
+      id: tId,
       label: "t",
       x: svgWidth - 50,
       y: svgHeight / 2,
     };
-
-    // מוסיפים למערך הקודקודים
-    setNodes([...nodes, source, target]);
-
-    // מגדירים את state של מקור ויעד
-    setSourceNode(sourceId);
-    setTargetNode(targetId);
-
-    setMessage("s ו-t נוספו אוטומטית.");
+    setNodes([...nodes, sNode, tNode]);
+    setSourceNode(sId);
+    setTargetNode(tId);
+    setMessage("נוספו מקור (s) ויעד (t).");
   };
 
+  // סימון אם additionalFlow=0 => "כל הכבוד, הזרימה מקסימלית"
+  const currentFlow = computeMaxFlow();
+  const additionalFlow = computeMaxAdditionalFlow();
+  if (additionalFlow === 0 && mode === "simulation") {
+    // אם אין עוד מסלולים אפשריים, הודעת ברכה
+    if (message.indexOf("מקסימלית") === -1) {
+      setMessage("כל הכבוד, הזרימה מקסימלית! אין עוד מסלולים להרחבה.");
+    }
+  }
+
+  // ---- פעולות במצב סימולציה: הגשת נתיב ידני
+  const handleSubmitPath = () => {
+    if (mode !== "simulation") return;
+    if (userPath.length < 2) {
+      setMessage("הנתיב חייב להכיל לפחות שני קודקודים.");
+      return;
+    }
+    if (userPath[userPath.length - 1] !== targetNode) {
+      setMessage("הנתיב חייב להסתיים ביעד (t).");
+      return;
+    }
+    // בודקים אם יש בכלל מסלול מרחיב BFS
+    const bfsRes = computeAugmentingPath();
+    if (!bfsRes) {
+      setMessage(
+        `אין עוד מסלולים. הזרימה היא מקסימלית! ערך זרימה: ${currentFlow}.`
+      );
+      return;
+    }
+    // משווים את path מהמשתמש למסלול ה-BFS
+    const userPathStr = JSON.stringify(userPath);
+    const correctStr = JSON.stringify(bfsRes.path);
+    if (userPathStr !== correctStr) {
+      setMessage(
+        `הנתיב אינו תואם לנתיב BFS. הנתיב הנכון הוא: ${bfsRes.path.join("->")}`
+      );
+      return;
+    }
+    // אם הנתיב תואם
+    applyAugmentation(userPath, bfsRes.bottleneck);
+    setMessage(`נתיב התקבל! הוספנו זרימה: ${bfsRes.bottleneck}.`);
+    setUserPath([]);
+    // בדיקה נוספת אם כבר אין עוד מסלולים
+    const next = computeAugmentingPath();
+    if (!next) {
+      setMessage(
+        `אין עוד מסלולים. כל הכבוד! זרימה מקסימלית: ${computeMaxFlow()}.`
+      );
+    }
+  };
+
+  const handleResetPath = () => {
+    setUserPath([]);
+    setMessage("הנתיב הידני אופס.");
+  };
+
+  // ---- פתרון אוטומטי (הפעלה רציפה)
   const autoSolve = () => {
     if (sourceNode === null || targetNode === null) {
-      setMessage("יש להגדיר s ו-t לפני פתרון אוטומטי.");
+      setMessage("קודם הגדר מקור ויעד לפני הפתרון האוטומטי.");
       return;
     }
-    if (autoSolving) {
-      setMessage("פתרון אוטומטי כבר פועל.");
-      return;
-    }
-    setSolutionSteps([]);
     setAutoSolving(true);
-    const solveStep = () => {
-      if (!autoSolving) return;
-      const r = computeAugmentingPath();
-      if (!r) {
-        setMessage(`סיימנו! הזרימה מקסימלית: ${computeMaxFlow()}`);
+    setSolutionSteps([]);
+    const runStep = () => {
+      const res = computeAugmentingPath();
+      if (!res) {
+        setMessage(`אין עוד מסלולים. הזרימה מקסימלית: ${computeMaxFlow()}.`);
         setAutoSolving(false);
         setHighlightedEdges([]);
         return;
       }
-      const { path, bottleneck } = r;
-      applyAugmentation(path, bottleneck);
-      setSolutionSteps((prev) => [...prev, { path, bottleneck }]);
-      highlightPathEdges(path);
+      applyAugmentation(res.path, res.bottleneck);
+      setSolutionSteps((prev) => [...prev, res]);
+      // סימון הצלעות בנתיב
+      const eIds: number[] = [];
+      for (let i = 0; i < res.path.length - 1; i++) {
+        const u = res.path[i];
+        const v = res.path[i + 1];
+        const fwd = edges.find((ed) => ed.from === u && ed.to === v);
+        if (fwd) eIds.push(fwd.id);
+        else {
+          const rev = edges.find((ed) => ed.from === v && ed.to === u);
+          if (rev) eIds.push(rev.id);
+        }
+      }
+      setHighlightedEdges(eIds);
       setMessage(
-        `נתיב מרחיב: ${path
-          .map(getNodeLabel)
-          .join(" -> ")} (צוואר: ${bottleneck})`
+        `מסלול מרחיב: ${res.path.join("->")} (צוואר בקבוק: ${res.bottleneck}).`
       );
       setTimeout(() => {
         setHighlightedEdges([]);
-        solveStep();
+        if (autoSolving) runStep();
       }, 1000);
     };
-    solveStep();
+    runStep();
   };
 
-  const highlightPathEdges = (path: number[]) => {
-    const eIds: number[] = [];
-    for (let i = 0; i < path.length - 1; i++) {
-      const u = path[i];
-      const v = path[i + 1];
-      const found = edges.find(
-        (ed) => (ed.from === u && ed.to === v) || (ed.from === v && ed.to === u)
-      );
-      if (found) eIds.push(found.id);
-    }
-    setHighlightedEdges(eIds);
-  };
+  // מעטפת המדריך
+  const gameGuide = (
+    <div className="guide-container">
+      <h3>מדריך שימוש (How to Play)</h3>
+      <ul>
+        <li>
+          במצב עריכה (edit): הוסף קודקודים, הוסף צלעות (קיבולת), הגדר מקור (s)
+          ויעד (t).
+        </li>
+        <li>
+          לאחר מכן עבור למצב סימולציה, ובחר ידנית נתיבי הרחבה או לחץ על פתרון
+          אוטומטי.
+        </li>
+        <li>אם פוטנציאל הזרימה הנוספת מגיע 0 = הזרימה מקסימלית!</li>
+      </ul>
+      <p>בהצלחה בסימולציה של מקס-פלו!</p>
+    </div>
+  );
 
   return (
     <div className="graph-game-container">
+      {showGuide && gameGuide}
+
       <StatusBar
-        currentFlow={computeMaxFlow()}
-        additionalFlow={computeMaxAdditionalFlow()}
+        currentFlow={currentFlow}
+        additionalFlow={additionalFlow}
         message={message}
       />
       <Toolbar
@@ -492,6 +556,9 @@ const GraphGame: React.FC = () => {
         addSourceAndTarget={addSourceAndTarget}
         autoSolve={autoSolve}
         startEditMode={startEditMode}
+        toggleGuide={() => setShowGuide(!showGuide)}
+        handleSubmitPath={handleSubmitPath}
+        handleResetPath={handleResetPath}
       />
       <GraphCanvas
         svgRef={svgRef}
@@ -511,8 +578,15 @@ const GraphGame: React.FC = () => {
         handleMouseUp={handleMouseUp}
         userPath={userPath}
       />
+      {/* אם יש שלבים (בפתרון אוטומטי) - מציגים אותם */}
       {mode === "simulation" && solutionSteps.length > 0 && (
-        <SolutionSteps steps={solutionSteps} getNodeLabel={getNodeLabel} />
+        <SolutionSteps
+          steps={solutionSteps}
+          getNodeLabel={(id) => {
+            const nd = nodes.find((n) => n.id === id);
+            return nd ? nd.label : `(${id})`;
+          }}
+        />
       )}
     </div>
   );
