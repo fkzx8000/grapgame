@@ -30,7 +30,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   resetGame,
   cancelEdit,
   addSourceAndTarget,
-  autoSolve,
+  // autoSolve,
   startEditMode,
   toggleGuide,
   handleSubmitPath,
@@ -49,7 +49,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <button onClick={cancelEdit}>בטל עריכה</button>
           <button onClick={addSourceAndTarget}>הוסף s,t אוטומטי</button>
           <button onClick={startSimulation}>מעבר לסימולציה</button>
-          <button onClick={autoSolve}>פתרון אוטומטי</button>
+          {/* <button onClick={autoSolve}>פתרון אוטומטי</button> */}
         </>
       )}
       {mode === "simulation" && (
