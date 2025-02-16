@@ -25,7 +25,6 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({
   mode,
-  editMode,
   setEditMode,
   startSimulation,
   resetGame,

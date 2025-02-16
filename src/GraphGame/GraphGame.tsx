@@ -60,7 +60,7 @@ const GraphGame: React.FC = () => {
   // מדריך
   const [showGuide, setShowGuide] = useState<boolean>(false);
 
-  const svgRef = useRef<SVGSVGElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null!);
 
   // ---- פונקציות חישוב BFS בגרף השארי ----
 
@@ -113,12 +113,13 @@ const GraphGame: React.FC = () => {
     let at: number | null = targetNode;
     while (at !== null) {
       path.unshift(at);
-      const par = visited[at];
-      if (par !== null) {
-        const rc = getResidualCapacity(par, at);
-        if (rc < bottleneck) bottleneck = rc;
+      const par: number | null = visited[at];
+      if (par === null) {
+        break;
       }
-      at = par;
+      const rc = getResidualCapacity(par, at);
+      if (rc < bottleneck) bottleneck = rc;
+      at = par!;
     }
     return { path, bottleneck };
   };
@@ -204,10 +205,10 @@ const GraphGame: React.FC = () => {
       if (!visited.hasOwnProperty(targetNode)) return null;
       const p: number[] = [];
       let bneck = Infinity;
-      let at = targetNode;
+      let at: number | null = targetNode;
       while (at !== null) {
         p.unshift(at);
-        const par = visited[at];
+        const par: number | null = visited[at];
         if (par !== null) {
           const rc = localGetRC(par, at);
           if (rc < bneck) bneck = rc;
