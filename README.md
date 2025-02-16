@@ -53,12 +53,11 @@ Additionally, the **App.tsx** file (located in the `src` folder) imports and use
 ## Installation and Usage
 
 1. **Clone the Repository:**
+
    ```bash
    git clone https://github.com/fkzx8000/graphflow-game.git
    cd graphflow-game
    ```
-
-````
 
 2. **Install Dependencies:**
 
@@ -100,5 +99,4 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Feel free to adjust the text as needed. This README provides an overview of the project, explains the theoretical background, lists the file structure for the **GraphGame** folder, and includes installation and usage instructions suitable for GitHub.
-
-````
+```
