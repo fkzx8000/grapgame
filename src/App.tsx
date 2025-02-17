@@ -2,9 +2,11 @@ import { useState } from "react";
 import GraphGame from "./GraphGame/GraphGame";
 import GraphGameKruskal from "./KruskalGame/GraphGameKruskal";
 import BFSDFSGame from "./BFSDFS/BFSDFSGame";
+import X from "./drawing/temp";
 import "./App.css";
 
 const components = {
+  x: X,
   graph: GraphGame,
   kruskal: GraphGameKruskal,
   bfsdfs: BFSDFSGame,
@@ -33,7 +35,7 @@ function App() {
       </div>
     );
   };
-
+  //framer-motion react-use
   return (
     <div className="app">
       {selectedComponent
@@ -54,13 +56,17 @@ function App() {
                     onClick={() => setSelectedComponent(key)}
                     style={
                       {
-                        "--orbit-radius": `${150 + index * 100}px`,
-                        "--start-angle": `${index * 120}deg`,
+                        "--orbit-radius": `${150 + index * 50}px`,
+                        "--start-angle": `${index * 100}deg`,
                       } as React.CSSProperties
                     }
                   >
                     <span className="bubble-text">
-                      {components[key].name.replace("Game", "")}
+                      {components[key].name
+                        .replace("Game", "")
+                        .replace("Graph", "Graph ")
+                        .replace("BFSDFS", "Bfs Dfs")
+                        .replace("TicTacToe", "X  O")}
                     </span>
                   </button>
                 )

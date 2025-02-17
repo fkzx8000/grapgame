@@ -38,7 +38,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  animation: orbit 40s linear infinite; /* שינינו מ-20s ל-40s */
+  animation: orbit 60s linear infinite; /* שינינו מ-20s ל-40s */
   transition: all 0.3s ease;
   box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
   transform-origin: center center;
