@@ -1,0 +1,10 @@
+BFSDFS/
+├── GraphCanvasTypes.tsx   // טיפוסים NodeType, EdgeType.
+├── Node.tsx               // קומפוננטת קודקוד (עיגול + תווית).
+├── EdgeBFSDFS.tsx         // צלע גרף, מציגה קו (עם חץ אם מכוון).
+├── GraphCanvas.tsx        // מציג את ה-SVG עם הקודקודים והצלעות.
+├── BFSDFSResults.tsx      // מציג תוצאות BFS/DFS בטבלה.
+├── ToolbarBFSDFS.tsx      // סרגל הכלים (כולל כפתור "מיון טופולוגי" חדש).
+├── StatusBarBFSDFS.tsx    // מציג הודעות למשתמש.
+├── BFSDFSGame.tsx         // הקומפוננטה הראשית (הלוגיקה המורחבת).
+└── GraphGame.css          // ה-CSS לעיצוב.

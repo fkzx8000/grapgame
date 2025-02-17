@@ -1,0 +1,10 @@
+GraphGame/
+├── GraphCanvasTypes.ts        // הגדרות הטיפוסים (NodeType, EdgeType)
+├── Node.tsx                   // קומפוננטת קודקוד (Node) – מציגה עיגול עם תווית
+├── EdgeUndirected.tsx         // קומפוננטת צלע (Edge) לגרף לא מכוון – מציגה קו ללא חץ, עם המשקל
+├── GraphCanvas.tsx            // קומפוננטת ציור הגרף (SVG) – מרנדרת קודקודים וצלעות
+├── ToolbarKruskal.tsx         // סרגל כלים (Toolbar) עבור משחק קרוסקאל
+├── StatusBarKruskal.tsx       // פס סטטוס המציג הודעות למשתמש
+├── SolutionStepsKruskal.tsx   // מציג את שלבי פתרון קרוסקאל (אופציונלי)
+├── GraphGameKruskal.tsx       // הקומפוננטה הראשית של משחק קרוסקאל
+└── GraphGame.css              // קובץ CSS לעיצוב
