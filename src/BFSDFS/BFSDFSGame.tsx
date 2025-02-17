@@ -30,9 +30,9 @@ const BFSDFSGame = () => {
 
   const dragStartNode = useRef(null);
 
-  // אתחול ראשוני
+  // // אתחול ראשוני
   useEffect(() => {
-    dispatch({ type: "INIT_NODES", payload: generateInitialNodes(5) });
+    dispatch({ type: "INIT_NODES", payload: generateInitialNodes(1) });
   }, []);
 
   // טיימר להרצת האלגוריתם
@@ -46,7 +46,7 @@ const BFSDFSGame = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  // יצירת צמתים ראשוניים
+  // // יצירת צמתים ראשוניים
   const generateInitialNodes = (count) => {
     return Array.from({ length: count }, (_, i) => ({
       id: i + 1,
