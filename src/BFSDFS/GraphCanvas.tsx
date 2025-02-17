@@ -10,7 +10,7 @@ import { NodeType, EdgeType } from "./GraphCanvasTypes";
 import "./GraphGame.css";
 
 interface GraphCanvasProps {
-  svgRef: React.RefObject<SVGSVGElement>;
+  svgRef: React.RefObject<SVGSVGElement | null>;
   svgWidth: number;
   svgHeight: number;
   nodes: NodeType[];
@@ -27,7 +27,7 @@ interface GraphCanvasProps {
   handleMouseMove: (e: React.MouseEvent<SVGSVGElement>) => void;
   handleMouseUp: () => void;
   userPath: number[];
-  handleEdgeClick: (edgeId: number) => void;
+  // handleEdgeClick: (edgeId: number) => void;
   nodeColors: { [key: number]: string }; // לבן/אפור/שחור
 }
 
@@ -49,21 +49,21 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
   handleMouseMove,
   handleMouseUp,
   userPath,
-  handleEdgeClick,
+  // handleEdgeClick,
   nodeColors,
 }) => {
-  const getFillColor = (col: string) => {
-    switch (col) {
-      case "gray":
-        return "lightgray";
-      case "black":
-        return "#333";
-      case "green":
-        return "lightgreen";
-      default:
-        return "white";
-    }
-  };
+  // const getFillColor = (col: string) => {
+  //   switch (col) {
+  //     case "gray":
+  //       return "lightgray";
+  //     case "black":
+  //       return "#333";
+  //     case "green":
+  //       return "lightgreen";
+  //     default:
+  //       return "white";
+  //   }
+  // };
 
   return (
     <div className="graph-wrapper">
@@ -101,7 +101,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             fontSizeEdgeLabel={fontSizeEdgeLabel}
             offsetEdgeLabel={offsetEdgeLabel}
             highlighted={highlightedEdges.includes(edge.id)}
-            onClick={handleEdgeClick}
+            // onClick={handleEdgeClick}
           />
         ))}
 

@@ -1,103 +1,76 @@
-/* BFSDFS/GraphGame.css */
-
-.graph-game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 10px;
-}
-
-.guide-container {
-  width: 600px;
-  border: 1px solid #aaa;
-  background-color: #fdfdfd;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.flow-status-bar {
-  width: 800px;
-  background-color: #f1f1f1;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.message-box {
-  font-size: 1rem;
-  color: #555;
+.game-container {
+  background: #2a2a2a;
+  color: #fff;
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .toolbar {
-  width: 800px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  background-color: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.toolbar button {
-  background-color: #0275d8;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  font-size: 0.95rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.toolbar button:hover {
-  background-color: #025aa5;
-}
-
-.graph-wrapper {
-  width: 800px;
-  height: 500px;
-  border: 1px solid #ccc;
-  background-color: #fafafa;
-  border-radius: 5px;
   margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.graph-canvas {
+.node {
+  fill: #4caf50;
+  stroke: #fff;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.node.start {
+  fill: #ff5722;
+}
+.node.visited {
+  fill: #2196f3;
+}
+.node.current {
+  filter: drop-shadow(0 0 10px #2196f3);
+}
+
+.edge {
+  stroke: #666;
+  stroke-width: 2;
+  marker-end: url(#arrowhead);
+}
+
+.edge-label {
+  fill: #fff;
+  font-size: 12px;
+  background: #333;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+.algorithm-tables {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.table-container {
+  background: #3a3a3a;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+table {
   width: 100%;
-  height: 100%;
+  border-collapse: collapse;
 }
 
-.solution-steps {
-  width: 800px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+td {
   padding: 8px;
-  background-color: #fff;
-  margin-top: 10px;
+  border-bottom: 1px solid #555;
 }
 
-.solution-steps h3 {
-  margin-top: 0;
-}
-
-.solution-steps ul {
-  list-style-type: decimal;
-  padding-left: 1.2rem;
-}
-
-.solution-steps li {
-  margin: 4px 0;
-}
-
-.graph-canvas g circle:hover {
-  stroke: #0275d8;
-  stroke-width: 2px;
+.error-message {
+  color: #ff4444;
+  margin-top: 15px;
+  padding: 10px;
+  background: #4a1a1a;
+  border-radius: 5px;
 }

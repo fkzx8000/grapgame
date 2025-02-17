@@ -1,6 +1,5 @@
-/* GraphGame/GraphGame.css */
+/* KruskalGame/GraphGame.css */
 
-/* מעטפת כללית */
 .graph-game-container {
   display: flex;
   flex-direction: column;
@@ -8,71 +7,79 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 10px;
+  padding: 20px;
+  background: #1a1a1a;
+  color: #fff;
+  min-height: 100vh;
 }
 
-/* מדריך */
 .guide-container {
-  width: 600px;
-  border: 1px solid #aaa;
-  background-color: #fdfdfd;
-  padding: 10px;
-  margin-bottom: 10px;
+  width: 800px;
+  border: 2px solid #3a3a3a;
+  background-color: #2a2a2a;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(33, 150, 243, 0.2);
 }
 
-/* Status Bar */
 .flow-status-bar {
   width: 800px;
-  background-color: #f1f1f1;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  margin-bottom: 10px;
+  background-color: #2a2a2a;
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
   text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .message-box {
-  font-size: 1rem;
-  color: #555;
+  font-size: 1.1rem;
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
 }
 
-/* Toolbar */
 .toolbar {
   width: 800px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
-  background-color: #f7f7f7;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 10px;
+  background-color: #2a2a2a;
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
 }
 
 .toolbar button {
-  background-color: #0275d8;
+  background: linear-gradient(145deg, #2196f3, #1976d2);
   color: #fff;
   border: none;
-  padding: 8px 14px;
-  font-size: 0.95rem;
-  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .toolbar button:hover {
-  background-color: #025aa5;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #2196f3;
+  background: linear-gradient(145deg, #1976d2, #2196f3);
 }
 
-/* Graph Canvas */
 .graph-wrapper {
   width: 800px;
   height: 500px;
-  border: 1px solid #ccc;
-  background-color: #fafafa;
-  border-radius: 5px;
+  border: 2px solid #3a3a3a;
+  background-color: #2a2a2a;
+  border-radius: 8px;
   margin-bottom: 20px;
+  overflow: hidden;
+  position: relative;
 }
 
 .graph-canvas {
@@ -80,60 +87,68 @@
   height: 100%;
 }
 
-/* Solution Steps */
 .solution-steps {
   width: 800px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  background-color: #fff;
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  margin-bottom: 20px;
 }
 
 .solution-steps h3 {
+  color: #2196f3;
   margin-top: 0;
+  text-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
 }
 
 .solution-steps ul {
   list-style-type: decimal;
-  padding-left: 1.2rem;
+  padding-left: 1.5rem;
+  color: #ddd;
 }
 
 .solution-steps li {
-  margin: 4px 0;
-}
-
-/* MST Group - הקבוצה A */
-.mst-group {
-  width: 800px;
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #aaa;
-  background-color: #ffecec;
+  margin: 8px 0;
+  padding: 5px;
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
 
+.mst-group {
+  width: 800px;
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 2px solid #ff4444;
+  background-color: #4a1a1a;
+  border-radius: 8px;
+}
+
 .mst-group h3 {
+  color: #ff4444;
   margin-top: 0;
-  text-align: center;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
 }
 
 .mst-edge-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
 }
 
 .mst-edge-item {
-  padding: 4px 8px;
-  background-color: #ffcccc;
-  border: 1px solid red;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  padding: 6px 12px;
+  background-color: #ff4444;
+  border: 1px solid #ff8888;
+  border-radius: 15px;
+  font-size: 0.95rem;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(255, 68, 68, 0.3);
 }
 
-/* Hover effect for nodes */
 .graph-canvas g circle:hover {
-  stroke: #0275d8;
-  stroke-width: 2px;
+  stroke: #2196f3;
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 5px #2196f3);
 }
