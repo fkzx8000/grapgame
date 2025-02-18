@@ -1,23 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 // הגדרות האנימציה כפי שהוגדרו
-const draw = {
-  hidden: { pathLength: 0, opacity: 0 },
-  visible: (i) => {
-    const delay = i * 0.5;
-    return {
-      pathLength: 1,
-      opacity: 1,
-      transition: {
-        pathLength: { delay, type: "spring", duration: 1.5, bounce: 0 },
-        opacity: { delay, duration: 0.01 },
-      },
-    };
-  },
-};
+// interface TransitionDetail {
+//   delay: number;
+//   type?: string;
+//   duration: number;
+//   bounce?: number;
+// }
+
+// interface Transitions {
+//   pathLength: TransitionDetail;
+//   opacity: TransitionDetail;
+// }
+
+// interface VisibleReturn {
+//   pathLength: number;
+//   opacity: number;
+//   transition: Transitions;
+// }
+
+// interface DrawVariant {
+//   hidden: { pathLength: number; opacity: number };
+//   visible: (i: number) => VisibleReturn;
+// }
+
+// const draw: DrawVariant = {
+//   hidden: { pathLength: 0, opacity: 0 },
+//   visible: (i: number): VisibleReturn => {
+//     const delay = i * 0.5;
+//     return {
+//       pathLength: 1,
+//       opacity: 1,
+//       transition: {
+//         pathLength: { delay, type: "spring", duration: 1.5, bounce: 0 },
+//         opacity: { delay, duration: 0.01 },
+//       },
+//     };
+//   },
+// };
 
 // מערך של צבעי ניאון
 const neonColors = [
@@ -36,12 +59,12 @@ function getRandomNeonColor() {
 }
 
 // פונקציה המייצרת סגנון ניאון עבור הצורות, כולל זוהר מסביב בצבע שלהם
-const getNeonStyle = (color) => ({
-  strokeWidth: 5,
-  strokeLinecap: "round",
-  fill: "transparent",
-  filter: `drop-shadow(0 0 0px ${color}) drop-shadow(0 0 5px ${color}) drop-shadow(0 0 10px ${color})`,
-});
+// const getNeonStyle = (color: string) => ({
+//   strokeWidth: 5,
+//   strokeLinecap: "round",
+//   fill: "transparent",
+//   filter: `drop-shadow(0 0 0px ${color}) drop-shadow(0 0 5px ${color}) drop-shadow(0 0 10px ${color})`,
+// });
 
 // סגנון ניאון לטקסט (תור/ניצחון) – ניתן לשנות את הצבע לפי רצון
 const neonTextStyle = {
@@ -51,24 +74,24 @@ const neonTextStyle = {
 };
 
 // קומפוננטת אנימציה לעיגול (O) עם אפקט ניאון
-const AnimatedO = ({ color }) => (
+const AnimatedO = ({ color }: { color: string }) => (
   <motion.svg width="100" height="100" viewBox="0 0 200 200">
     <motion.circle
       cx="100"
       cy="100"
       r="80"
       stroke={color}
-      variants={draw}
+      // variants={draw}
       initial="hidden"
       animate="visible"
       custom={1}
-      style={getNeonStyle(color)}
+      // style={getNeonStyle(color)}
     />
   </motion.svg>
 );
 
 // קומפוננטת אנימציה ל-X עם אפקט ניאון (שני קווים)
-const AnimatedX = ({ color }) => (
+const AnimatedX = ({ color }: { color: string }) => (
   <motion.svg width="100" height="100" viewBox="0 0 200 200">
     <motion.line
       x1="40"
@@ -76,11 +99,11 @@ const AnimatedX = ({ color }) => (
       x2="160"
       y2="160"
       stroke={color}
-      variants={draw}
+      // variants={draw}
       initial="hidden"
       animate="visible"
       custom={1}
-      style={getNeonStyle(color)}
+      // style={getNeonStyle(color)}
     />
     <motion.line
       x1="160"
@@ -88,11 +111,11 @@ const AnimatedX = ({ color }) => (
       x2="40"
       y2="160"
       stroke={color}
-      variants={draw}
+      // variants={draw}
       initial="hidden"
       animate="visible"
       custom={1.5}
-      style={getNeonStyle(color)}
+      // style={getNeonStyle(color)}
     />
   </motion.svg>
 );
@@ -101,11 +124,16 @@ const AnimatedX = ({ color }) => (
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [turn, setTurn] = useState("X");
-  const [winner, setWinner] = useState(null);
+  const [winner, setWinner] = useState<string | null>(null);
 
   // פונקציה לבדיקה האם יש ניצחון (שורות, עמודות ואלכסונים)
-  const checkWinner = (board) => {
-    const winningCombinations = [
+  interface BoardCell {
+    player: string;
+    color: string;
+  }
+
+  const checkWinner = (board: (BoardCell | null)[]): string | null => {
+    const winningCombinations: number[][] = [
       [0, 1, 2], // שורה עליונה
       [3, 4, 5], // שורה אמצעית
       [6, 7, 8], // שורה תחתונה
@@ -121,24 +149,33 @@ const TicTacToe = () => {
         board[a] &&
         board[b] &&
         board[c] &&
-        board[a].player === board[b].player &&
-        board[a].player === board[c].player
+        board[a]!.player === board[b]!.player &&
+        board[a]!.player === board[c]!.player
       ) {
-        return board[a].player;
+        return board[a]!.player;
       }
     }
     return null;
   };
 
   // טיפול בלחיצה על תא
-  const handleClick = (index) => {
+  interface BoardCell {
+    player: string;
+    color: string;
+  }
+
+  interface HandleClick {
+    (index: number): void;
+  }
+
+  const handleClick: HandleClick = (index: number): void => {
     if (board[index] || winner) return; // אם התא תפוס או המשחק כבר הסתיים
-    const color = getRandomNeonColor();
-    const newBoard = [...board];
+    const color: string = getRandomNeonColor();
+    const newBoard: (BoardCell | null)[] = [...board];
     newBoard[index] = { player: turn, color };
     setBoard(newBoard);
 
-    const gameWinner = checkWinner(newBoard);
+    const gameWinner: string | null = checkWinner(newBoard);
     if (gameWinner) {
       setWinner(gameWinner);
     } else {

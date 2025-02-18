@@ -2,11 +2,11 @@ import { useState } from "react";
 import GraphGame from "./GraphGame/GraphGame";
 import GraphGameKruskal from "./KruskalGame/GraphGameKruskal";
 import BFSDFSGame from "./BFSDFS/BFSDFSGame";
-import X from "./drawing/temp";
+// import X from "./drawing/temp";
 import "./App.css";
 
 const components = {
-  x: X,
+  // x: X,
   graph: GraphGame,
   kruskal: GraphGameKruskal,
   bfsdfs: BFSDFSGame,
@@ -44,7 +44,15 @@ function App() {
             <div className="bubbles-system">
               {/* בועה מרכזית */}
               <div className="bubble-center glow">
-                <div className="logo">⚛️</div>
+                <div className="logo">
+                  {/* ⚛️ */}
+                  <img
+                    src="../public/vite.svg"
+                    alt="Italian Trulli"
+                    width="100"
+                    height="100"
+                  />
+                </div>
               </div>
 
               {/* בועות במסלולים מעגליים */}

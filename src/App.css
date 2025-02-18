@@ -99,6 +99,9 @@
 
 .close-button {
   position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   top: 20px;
   right: 20px;
   background: #ff4444;
